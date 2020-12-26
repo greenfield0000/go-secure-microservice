@@ -151,3 +151,8 @@ func ExtractTokenMetadata(r *http.Request) (*AccessDetails, error) {
 	}
 	return nil, err
 }
+
+// SetHeaderAccessDetailsUserId set userid in header request
+func SetHeaderAccessDetailsUserId(r *http.Request, userId uint64) {
+	r.Header["Access-Details-UserId"] = []string{strconv.FormatUint(userId, 10)}
+}

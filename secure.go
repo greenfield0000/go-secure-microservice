@@ -49,7 +49,7 @@ type AccessDetails struct {
 }
 
 // CreateToken - function with create accessToken and RefreshToken
-func CreateToken(userid uint64) (*TokenDetails, error) {
+func CreateToken(accountId uint64) (*TokenDetails, error) {
 	var err error
 
 	td := &TokenDetails{}
@@ -72,7 +72,7 @@ func CreateToken(userid uint64) (*TokenDetails, error) {
 	atClaims := jwt.MapClaims{}
 	atClaims["authorized"] = true
 	atClaims["access_uuid"] = td.AccessUuid
-	atClaims["user_id"] = userid
+	atClaims["account_id"] = accountId
 	atClaims["exp"] = td.AtExpires
 	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
 	td.AccessToken, err = at.SignedString([]byte(os.Getenv("ACCESS_SECRET")))
@@ -83,7 +83,7 @@ func CreateToken(userid uint64) (*TokenDetails, error) {
 	os.Setenv("REFRESH_SECRET", "mySecretTempKey") //this should be in an env file
 	rtClaims := jwt.MapClaims{}
 	rtClaims["refresh_uuid"] = td.RefreshUuid
-	rtClaims["user_id"] = userid
+	rtClaims["account_id"] = accountId
 	rtClaims["exp"] = td.RtExpires
 	rt := jwt.NewWithClaims(jwt.SigningMethodHS256, rtClaims)
 	td.RefreshToken, err = rt.SignedString([]byte(os.Getenv("REFRESH_SECRET")))
@@ -141,7 +141,7 @@ func ExtractTokenMetadata(r *http.Request) (*AccessDetails, error) {
 		if !ok {
 			return nil, err
 		}
-		userId, err := strconv.ParseUint(fmt.Sprintf("%.f", claims["user_id"]), 10, 64)
+		userId, err := strconv.ParseUint(fmt.Sprintf("%.f", claims["account_id"]), 10, 64)
 		if err != nil {
 			return nil, err
 		}
@@ -153,13 +153,13 @@ func ExtractTokenMetadata(r *http.Request) (*AccessDetails, error) {
 	return nil, err
 }
 
-// SetUserIdHeaderRequest set userid in header request
-func SetUserIdHeaderRequest(r *http.Request, userId uint64) {
-	r.Header["Access-Details-UserId"] = []string{strconv.FormatUint(userId, 10)}
+// SetAccountIdHeaderRequest set userid in header request
+func SetAccountIdHeaderRequest(r *http.Request, accountId uint64) {
+	r.Header["Access-Details-AccountId"] = []string{strconv.FormatUint(accountId, 10)}
 }
 
 // GetUserIdHeaderRequest get  user id from request header
-func GetUserIdHeaderRequest(r *http.Request) (uint64, error) {
-	userId := r.Header["Access-Details-UserId"][0]
+func GetAccountIdHeaderRequest(r *http.Request) (uint64, error) {
+	userId := r.Header["Access-Details-AccountId"][0]
 	return strconv.ParseUint(userId, 10, 10)
 }
